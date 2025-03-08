@@ -64,8 +64,7 @@ def update():
     # Spawn obstacles
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model='rock', texture='rock', scale=(0.1, 0.1, 0.1), position=(lane, 1, 20)))
-
+        obstacles.append(Entity(model='rock', texture ='rock_AO.png', scale=(0.1, 0.1, 0.1), position=(lane, 1, 20)))
     if random.random() < 0.02:
         lane = random.choice(lanes)
         obstacles.append(Entity(model='cube', color=color.yellow, scale=(1, 2, 1), position=(lane, 4, 20)))
