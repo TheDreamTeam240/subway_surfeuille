@@ -1,7 +1,7 @@
 from ursina import *
 import random
 
-app = Ursina()
+app = Ursina(title="Subway Surfeuille", borderless=False, fullscreen=True)
 
 # Assurer que la police est bien chargée
 Text.default_font = 'VeraMono.ttf'  # Facultatif mais peut aider sur certaines configurations
@@ -23,8 +23,19 @@ lives = 3
 score = 0
 
 # UI Elements
-lives_text = Text(text=f'Lives: {lives}', position=(-0.8, 0.45), scale=1.5, color=color.white, background=True)
-score_text = Text(text=f'Score: {score}', position=(0.7, 0.45), scale=1.5, color=color.white, background=True)
+lives_text = Text(text=f'Lives: {lives}',
+                  origin=(-1, 1),  # Alignement en haut à gauche
+                  position=(-0.70, 0.45),  # Position en haut à gauche
+                  scale=1.5,
+                  color=color.white,
+                  background=True)
+
+score_text = Text(text=f'Score: {score}',
+                  origin=(-1, 1),  # Alignement en haut à gauche
+                  position=(-0.70, 0.30),  # Juste en dessous
+                  scale=1.5,
+                  color=color.white,
+                  background=True)
 
 # Input handling
 def input(key):
@@ -80,7 +91,7 @@ def update():
             road.z += 60  # Loop road segment
 
 # Camera setup
-camera.position = (0, 5, -15)
-camera.rotation_x = 20
+camera.position = (0, 15, -30)
+camera.rotation_x = 25
 
 app.run()
