@@ -95,10 +95,13 @@ def update():
         player.animate_y(6, duration=0.3, curve=curve.out_sine)
         invoke(setattr, player, 'y', 1, delay=0.6)
 
+
+
     # Spawn obstacles
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model='rock', texture='rock_diffuse.png', scale=(0.1, 0.1, 0.1), position=(lane, 1, 20)))
+        obstacles.append(Entity(model=random.choice(['rock-sl-1', 'rock-sl-2', 'rock']), texture='rock_diffuse.png', scale=(0.1, 0.1, 0.1), position=(lane, 1, 20),
+                         rotation=(random.uniform(0, 360), random.uniform(0, 360), random.uniform(0, 360))))
 
     if random.random() < 0.02:
         lane = random.choice(lanes)
