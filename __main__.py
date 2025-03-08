@@ -7,7 +7,7 @@ app = Ursina(title="Subway Surfeuille", borderless=False, fullscreen=True)
 Text.default_font = 'VeraMono.ttf'  # Facultatif mais peut aider sur certaines configurations
 
 # Load assets
-player = Entity(model='cube', color=color.orange, scale=(1, 2, 1), position=(0, 1, -5))
+player = Entity(model='cube', color=color.orange, scale=(1, 1, 1), position=(0, 1, -5))
 road_segments = [
     Entity(model='cube', color=color.gray, scale=(6, 0.1, 20), position=(0, 0, i))
     for i in range(-20, 40, 20)
@@ -58,19 +58,33 @@ def update():
 
     # Jumping
     if held_keys['space'] and player.y <= 1:
-        player.animate_y(2.5, duration=0.3, curve=curve.out_quad)
+        player.animate_y(6, duration=0.3, curve=curve.out_quad)
         invoke(setattr, player, 'y', 1, delay=0.6)
-    
+
     # Spawn obstacles
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model='cube', color=color.red, scale=(1, 2, 1), position=(lane, 1, 20)))
-    
+        obstacles.append(Entity(model='cube', color=color.red, scale=(1, 0.5, 1), position=(lane, 1, 20)))
+
+    if random.random() < 0.02:
+        lane = random.choice(lanes)
+        obstacles.append(Entity(model='cube', color=color.yellow, scale=(1, 2, 1), position=(lane, 4, 20)))
+
     # Move obstacles & check collisions
     for obs in obstacles[:]:
         obs.z -= time.dt * speed
 
-        if abs(obs.z - player.z) < 1 and abs(obs.x - player.x) < 1:
+        if abs(obs.z - player.z) < 0.2 and abs(obs.x - player.x) < 0.2 and abs(obs.y - player.y) < 0.2:
+            lives -= 1
+            lives_text.text = f'Lives: {lives}'  # Update text
+            lives_text.visible = True  # Assurer l'affichage
+            obstacles.remove(obs)
+            destroy(obs)
+            if lives <= 0:
+                print("Game Over")
+                application.quit()
+
+        if abs(obs.z - player.z) < 1 and abs(obs.x - player.x) < 1 and abs(obs.y - player.y) < 1:
             lives -= 1
             lives_text.text = f'Lives: {lives}'  # Update text
             lives_text.visible = True  # Assurer l'affichage
