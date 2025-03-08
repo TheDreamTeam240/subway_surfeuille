@@ -8,10 +8,6 @@ Text.default_font = 'VeraMono.ttf'  # Facultatif mais peut aider sur certaines c
 
 # Load assets
 player = Entity(model='cube', color=color.orange, scale=(1, 1, 1), position=(0, 1, -5))
-road_segments = [
-    Entity(model='cube', color=color.gray, scale=(6, 0.1, 20), position=(0, 0, i))
-    for i in range(-20, 40, 20)
-]
 
 # Game variables
 lanes = [-2, 0, 2]
@@ -37,6 +33,44 @@ score_text = Text(text=f'Score: {score}',
                   color=color.white,
                   background=True)
 
+class WaterParticle(Entity):
+    def __init__(self, position, direction, speed, lifetime=5):
+        super().__init__(
+            model='sphere',  
+            scale=random.uniform(0.1, 0.3),  # Random size for variation
+            color=random.choice([color.blue, color.azure, color.cyan, color.turquoise]),  # Using only the available blue shades
+            position=position,
+            texture='white_cube',
+            alpha=random.uniform(0.5, 0.8)  # Random transparency for better effect
+        )
+        self.direction = direction
+        self.speed = speed
+        self.lifetime = lifetime
+
+    def update(self):
+        self.position += self.direction * self.speed * time.dt
+        self.lifetime -= time.dt
+        if self.lifetime <= 0:
+            destroy(self)
+
+class River(Entity):
+    def __init__(self, start_pos, width=10, particle_count=50):
+        super().__init__()
+        self.start_pos = start_pos
+        self.width = width
+        self.particle_count = particle_count
+        self.spawn_particles()
+
+    def spawn_particles(self):
+        for _ in range(self.particle_count):
+            direction = Vec3(0, 0, random.uniform(0.5, 1.5))  # Mouvement vers l'arrière
+            position = self.start_pos + Vec3(random.uniform(-self.width/2, self.width/2), 0, random.uniform(-0.5, 0.5))
+            speed = random.uniform(1, 3)
+            WaterParticle(position, direction, speed)
+
+    def update(self):
+        self.spawn_particles()
+
 # Input handling
 def input(key):
     global current_lane
@@ -58,13 +92,14 @@ def update():
 
     # Jumping
     if held_keys['space'] and player.y <= 1:
-        player.animate_y(6, duration=0.3, curve=curve.out_quad)
+        player.animate_y(6, duration=0.3, curve=curve.out_sine)
         invoke(setattr, player, 'y', 1, delay=0.6)
 
     # Spawn obstacles
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model='rock', texture ='rock_AO.png', scale=(0.1, 0.1, 0.1), position=(lane, 1, 20)))
+        obstacles.append(Entity(model='rock', scale=(0.1, 0.1, 0.1), position=(lane, 1, 20)))
+
     if random.random() < 0.02:
         lane = random.choice(lanes)
         obstacles.append(Entity(model='cube', color=color.yellow, scale=(1, 2, 1), position=(lane, 4, 20)))
@@ -97,14 +132,10 @@ def update():
             obstacles.remove(obs)
             destroy(obs)
 
-    # Move road segments
-    for road in road_segments:
-        road.z -= time.dt * speed
-        if road.z < -30:
-            road.z += 60  # Loop road segment
+river = River(start_pos=Vec3(0, 0.1, -5), width=15, particle_count=10)
 
 # Camera setup
-camera.position = (0, 15, -30)
+camera.position = (0, 10, -20)
 camera.rotation_x = 25
 
 app.run()
