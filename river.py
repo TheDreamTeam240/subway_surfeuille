@@ -4,7 +4,7 @@ import random
 class WaterParticle(Entity):
     def __init__(self, position, direction, speed, lifetime=5):
         super().__init__(
-            model='sphere',  
+            model='sphere',
             scale=random.uniform(0.1, 0.3),  # Random size for variation
             color=random.choice([color.blue, color.azure, color.cyan, color.turquoise]),  # Using only the available blue shades
             position=position,

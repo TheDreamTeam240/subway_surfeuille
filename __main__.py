@@ -7,7 +7,7 @@ app = Ursina(title="Subway Surfeuille", borderless=False, fullscreen=True)
 Text.default_font = 'VeraMono.ttf'  # Facultatif mais peut aider sur certaines configurations
 
 # Load assets
-player = Entity(model='cube', color=color.orange, scale=(1, 1, 1), position=(0, 1, -5))
+player = Entity(model='leaf', color=color.green, scale=(0.01, 0.01, 0.01), position=(0, 1, -5))
 
 # Game variables
 lanes = [-2, 0, 2]
@@ -138,7 +138,7 @@ def update():
 class WindParticle(Entity):
     def __init__(self, position, direction, lifetime=2):
         super().__init__(
-            model='sphere',  
+            model='plane',
             scale=random.uniform(0.3, 0.7),  # Random size for more variety
             color=color.white,  # Wind should be subtle, use white
             position=position,
@@ -176,7 +176,7 @@ def spawn_wind_particle():
     for _ in range(num_particles):
         offset = Vec3(random.uniform(-1, 1), random.uniform(1, 2), random.uniform(0, 1))  # Random offset around the player
         WindParticle(position=player.position + offset, direction=wind_direction, lifetime=2)
-    
+
     # Re-trigger the function every 3 seconds
     invoke(spawn_wind_particle, delay=3)
 
