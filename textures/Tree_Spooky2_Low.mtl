@@ -1,0 +1,14 @@
+newmtl Tree_Spooky2_Low
+	Ns 10.000000000000
+	Ni 1.500000000000
+	d 1.000000000000
+	Tr 0.000000000000
+	Tf 1.000000000000 1.000000000000 1.000000000000 
+	illum 2
+	Ka 0.537254929543 0.356862753630 0.211764708161
+	Kd 0.537254929543 0.356862753630 0.211764708161
+	Ks 0.000000000000 0.000000000000 0.000000000000
+	Ke 0.000000000000 0.000000000000 0.000000000000
+	map_Kd D:\Textures\Trees\Cartoon Trees\TreeSpooky2\TreeSpooky2_Color.png
+	map_Ks D:\Textures\Trees\Cartoon Trees\TreeSpooky2\TreeSpooky2_Specular.png
+	norm D:\Textures\Trees\Cartoon Trees\TreeSpooky2\TreeSpooky2_Normal.png
