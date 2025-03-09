@@ -30,6 +30,73 @@ score_text = Text(text=f'Score: {score}',
                   color=color.white,
                   background=True)
 
+water_shader = Shader(
+    language=Shader.GLSL,
+    vertex='''
+#version 110
+attribute vec4 p3d_Vertex;
+uniform mat4 p3d_ModelViewProjectionMatrix;
+uniform float time;
+varying vec3 world_pos;
+
+void main() {
+    vec4 pos = p3d_Vertex;
+    float wave_height = 0.1 * sin(pos.x * 0.5 + time) * cos(pos.z * 0.3 + time * 0.7);
+    pos.y += wave_height;
+    gl_Position = p3d_ModelViewProjectionMatrix * pos;
+    world_pos = pos.xyz;
+}
+    ''',
+    fragment='''
+#version 110
+varying vec3 world_pos;
+uniform vec3 light_pos;
+uniform float time;
+
+void main() {
+    vec3 base_color = vec3(0.0, 0.5, 0.8);
+    float wave = 0.5 + 0.5 * sin(world_pos.x * 0.5 + world_pos.z * 0.3 + time);
+    vec3 water_color = base_color * wave;
+
+    vec3 light_dir = normalize(light_pos - world_pos);
+    float diffuse = max(0.0, dot(vec3(0.0, 1.0, 0.0), light_dir));
+    water_color += vec3(diffuse) * 0.3;
+
+    gl_FragColor = vec4(water_color, 0.85);
+}
+    '''
+)
+
+particle_shader = Shader(
+    language=Shader.GLSL,
+    vertex='''
+#version 110
+attribute vec4 p3d_Vertex;
+attribute vec2 p3d_MultiTexCoord0;
+uniform mat4 p3d_ModelViewProjectionMatrix;
+varying vec2 texcoord;
+
+void main() {
+    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
+    texcoord = p3d_MultiTexCoord0;
+}
+    ''',
+    fragment='''
+#version 110
+varying vec2 texcoord;
+uniform sampler2D p3d_Texture0;
+uniform float time;
+
+void main() {
+    vec4 color = texture2D(p3d_Texture0, texcoord);
+    float brightness = 0.5 + 0.5 * sin(time * 5.0 + texcoord.x * texcoord.y);
+    vec3 water_color = vec3(0.2, 0.6, 0.9);
+    float alpha = 0.8 * (1.0 - texcoord.y) * brightness;
+    gl_FragColor = vec4(water_color * brightness, alpha);
+}
+    '''
+)
+
 class WaterParticle(Entity):
     def __init__(self, position, direction, speed, lifetime=1, is_splash=False, is_foam=False):
         if is_foam:
@@ -46,7 +113,8 @@ class WaterParticle(Entity):
             position=position,
             texture='white_cube',
             billboard=True,
-            alpha=0.6 if is_foam else 0.8
+            alpha=0.6 if is_foam else 0.8,
+            shader=particle_shader
         )
         self.direction = direction
         self.base_speed = speed
@@ -98,6 +166,7 @@ class River(Entity):
             position=(self.start_pos.x, 0.1, self.start_pos.z),
             color=color.rgb(26, 17, 122),
             texture='white_cube',
+            shader=water_shader
         )
         self.water_surface.set_shader_input("light_pos", Vec3(10, 10, 10))
         self.water_surface.set_shader_input("time", 0.0)
