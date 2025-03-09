@@ -151,7 +151,7 @@ class WaterParticle(Entity):
             destroy(self)
 
 class River(Entity):
-    def __init__(self, start_pos, width=15, particle_count=300, spawn_rate=10):
+    def __init__(self, start_pos, width=15, particle_count=50   , spawn_rate=10):
         super().__init__()
         self.start_pos = start_pos
         self.width = width
@@ -230,7 +230,7 @@ def update():
 
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model=random.choice(['rock-sl-1', 'rock-sl-2', 'rock']), texture=random.choice(['rock_diffuse.png', 'rock_roughness.png', 'rock_specular.png']), scale=(0.07, 0.07, 0.07), position=(lane, 1, 20),
+        obstacles.append(Entity(model=random.choice(['rock-sl-1', 'rock-sl-2', 'rock']), texture=random.choice(['rock_diffuse.png', 'rock_roughness.png', 'rock_specular.png']), scale=(0.07, 0.07, 0.07), position=(lane, 0, 20),
                          rotation=(random.uniform(0, 360), random.uniform(0, 360), random.uniform(0, 360))))
 
     if random.random() < 0.02:
@@ -311,7 +311,7 @@ sky = Sky()
 sun = DirectionalLight(shadows=True)
 sun.look_at(Vec3(-0.5, -1, -0.5))
 
-camera.position = (0, 10, -20)
-camera.rotation_x = 25
+camera.position = (0, 5, -20)
+camera.rotation_x = 10
 
 app.run()
