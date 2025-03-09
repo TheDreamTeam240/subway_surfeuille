@@ -6,14 +6,14 @@ app = Ursina(title="Subway Surfeuille", borderless=False, fullscreen=True)
 
 Text.default_font = 'VeraMono.ttf'
 
-player = Entity(model='leaf', color=color.green, scale=(0.01, 0.01, 0.01), position=(0, 1, -5))
+player = Entity(model='leaf', color=color.green, scale=(0.01, 0.01, 0.01), position=(0, 0.2, -5))
 
 lanes = [-2, 0, 2]
 current_lane = 1
 speed = 5
 obstacles = []
 time_elapsed = 0
-lives = 3
+lives = 10
 score = 0
 
 lives_text = Text(text=f'Lives: {lives}',
@@ -30,75 +30,8 @@ score_text = Text(text=f'Score: {score}',
                   color=color.white,
                   background=True)
 
-water_shader = Shader(
-    language=Shader.GLSL,
-    vertex='''
-#version 110
-attribute vec4 p3d_Vertex;
-uniform mat4 p3d_ModelViewProjectionMatrix;
-uniform float time;
-varying vec3 world_pos;
-
-void main() {
-    vec4 pos = p3d_Vertex;
-    float wave_height = 0.1 * sin(pos.x * 0.5 + time) * cos(pos.z * 0.3 + time * 0.7);
-    pos.y += wave_height;
-    gl_Position = p3d_ModelViewProjectionMatrix * pos;
-    world_pos = pos.xyz;
-}
-    ''',
-    fragment='''
-#version 110
-varying vec3 world_pos;
-uniform vec3 light_pos;
-uniform float time;
-
-void main() {
-    vec3 base_color = vec3(0.0, 0.5, 0.8);
-    float wave = 0.5 + 0.5 * sin(world_pos.x * 0.5 + world_pos.z * 0.3 + time);
-    vec3 water_color = base_color * wave;
-
-    vec3 light_dir = normalize(light_pos - world_pos);
-    float diffuse = max(0.0, dot(vec3(0.0, 1.0, 0.0), light_dir));
-    water_color += vec3(diffuse) * 0.3;
-
-    gl_FragColor = vec4(water_color, 0.85);
-}
-    '''
-)
-
-particle_shader = Shader(
-    language=Shader.GLSL,
-    vertex='''
-#version 110
-attribute vec4 p3d_Vertex;
-attribute vec2 p3d_MultiTexCoord0;
-uniform mat4 p3d_ModelViewProjectionMatrix;
-varying vec2 texcoord;
-
-void main() {
-    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
-    texcoord = p3d_MultiTexCoord0;
-}
-    ''',
-    fragment='''
-#version 110
-varying vec2 texcoord;
-uniform sampler2D p3d_Texture0;
-uniform float time;
-
-void main() {
-    vec4 color = texture2D(p3d_Texture0, texcoord);
-    float brightness = 0.5 + 0.5 * sin(time * 5.0 + texcoord.x * texcoord.y);
-    vec3 water_color = vec3(0.2, 0.6, 0.9);
-    float alpha = 0.8 * (1.0 - texcoord.y) * brightness;
-    gl_FragColor = vec4(water_color * brightness, alpha);
-}
-    '''
-)
-
 class WaterParticle(Entity):
-    def __init__(self, position, direction, speed, lifetime=5, is_splash=False, is_foam=False):
+    def __init__(self, position, direction, speed, lifetime=1, is_splash=False, is_foam=False):
         if is_foam:
             scale = 0.02
         elif is_splash:
@@ -109,10 +42,9 @@ class WaterParticle(Entity):
         super().__init__(
             model='quad',
             scale=scale,
-            color=color.white if is_foam else color.cyan,
+            color=color.rgb(26, 17, 122),
             position=position,
             texture='white_cube',
-            shader=particle_shader,
             billboard=True,
             alpha=0.6 if is_foam else 0.8
         )
@@ -147,11 +79,12 @@ class WaterParticle(Entity):
 
         self.set_shader_input("time", time.time())
         self.lifetime -= time.dt
-        if self.lifetime <= 0 or self.z < -30 or abs(self.x) > 7.5 or self.y < 0:
+        if self.lifetime <= 0:
             destroy(self)
+            del self
 
 class River(Entity):
-    def __init__(self, start_pos, width=15, particle_count=50   , spawn_rate=10):
+    def __init__(self, start_pos, width=5, particle_count=50, spawn_rate=1):
         super().__init__()
         self.start_pos = start_pos
         self.width = width
@@ -161,11 +94,10 @@ class River(Entity):
 
         self.water_surface = Entity(
             model='plane',
-            scale=(self.width, 1, 60),
+            scale=(self.width, 0, 60),
             position=(self.start_pos.x, 0.1, self.start_pos.z),
-            color=color.rgba(0, 100, 200, 150),
+            color=color.rgb(26, 17, 122),
             texture='white_cube',
-            shader=water_shader,
         )
         self.water_surface.set_shader_input("light_pos", Vec3(10, 10, 10))
         self.water_surface.set_shader_input("time", 0.0)
@@ -198,7 +130,7 @@ class River(Entity):
         self.water_surface.set_shader_input("light_pos", Vec3(10, 10, 10))
 
         if player.y < 0.5 and abs(player.z) < 30:
-            if random.random() < 0.6:
+            if random.random() < 0.02:
                 splash_pos = Vec3(player.x + random.uniform(-0.5, 0.5), 0.1, player.z + random.uniform(-0.5, 0.5))
                 self.create_particle(is_splash=True, position=splash_pos)
                 for _ in range(8):
@@ -225,8 +157,8 @@ def update():
     score_text.visible = True
 
     if held_keys['space'] and player.y <= 1:
-        player.animate_y(6, duration=0.3, curve=curve.out_sine)
-        invoke(setattr, player, 'y', 1, delay=0.6)
+        player.animate_y(2, duration=0.3, curve=curve.out_sine)
+        invoke(setattr, player, 'y', 0.3, delay=0.6)
 
     if random.random() < 0.02:
         lane = random.choice(lanes)
@@ -235,7 +167,7 @@ def update():
 
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model='Tree_Spooky2_Low', texture=random.choice(['tree1.jpg', 'tree2.jpg', 'tree3.jpg']), scale=(0.02, 0.02, 0.02), position=(lane, 1, 20)))
+        obstacles.append(Entity(model='Tree_Spooky2_Low', texture=random.choice(['tree1.jpg', 'tree2.jpg', 'tree3.jpg']), scale=(0.02, 0.02, 0.02), position=(lane, 0, 20)))
 
     for obs in obstacles[:]:
         obs.z -= time.dt * speed
