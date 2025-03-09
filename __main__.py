@@ -7,7 +7,7 @@ app = Ursina(title="Subway Surfeuille", borderless=False, fullscreen=True)
 Text.default_font = 'VeraMono.ttf'  # Facultatif mais peut aider sur certaines configurations
 
 # Load assets
-player = Entity(model='cube', color=color.orange, scale=(1, 1, 1), position=(0, 1, -5))
+player = Entity(model='leaf', color=color.green, scale=(0.01, 0.01, 0.01), position=(0, 1, -5))
 
 # Game variables
 lanes = [-2, 0, 2]
@@ -134,6 +134,54 @@ def update():
         elif obs.z < -10:  # Remove off-screen obstacles
             obstacles.remove(obs)
             destroy(obs)
+
+class WindParticle(Entity):
+    def __init__(self, position, direction, lifetime=2):
+        super().__init__(
+            model='plane',
+            scale=random.uniform(0.3, 0.7),  # Random size for more variety
+            color=color.white,  # Wind should be subtle, use white
+            position=position,
+            texture='white_cube',
+            alpha=0.7  # Slight transparency for effect
+        )
+        self.direction = direction
+        self.lifetime = lifetime
+
+    def update(self):
+        # Moving the particle in the given direction
+        self.position += self.direction * time.dt
+        self.lifetime -= time.dt
+        if self.lifetime <= 0:
+            destroy(self)
+
+def spawn_wind_particle():
+    global current_lane
+    wind_direction = random.choice([-1, 1])  # Randomly decide the direction of the wind (left or right)
+    new_lane = current_lane + wind_direction
+    if new_lane < 0:
+        new_lane = 0  # Prevent going to the left beyond the leftmost lane
+    elif new_lane > 2:
+        new_lane = 2  # Prevent going to the right beyond the rightmost lane
+
+    # Move the player to the new lane
+    current_lane = new_lane
+    player.x = lanes[current_lane]
+
+    # Determine wind direction: right to left or left to right
+    wind_direction = random.choice([Vec3(-1, 0, 0), Vec3(1, 0, 0)])  # Right-to-left or left-to-right
+
+    # Spawn multiple wind particles around the player
+    num_particles = random.randint(5, 10)  # Random number of particles between 5 and 10
+    for _ in range(num_particles):
+        offset = Vec3(random.uniform(-1, 1), random.uniform(1, 2), random.uniform(0, 1))  # Random offset around the player
+        WindParticle(position=player.position + offset, direction=wind_direction, lifetime=2)
+
+    # Re-trigger the function every 3 seconds
+    invoke(spawn_wind_particle, delay=3)
+
+# Call the wind particle spawn function at the start of the game
+spawn_wind_particle()
 
 river = River(start_pos=Vec3(0, 0.1, -5), width=15, particle_count=10)
 
