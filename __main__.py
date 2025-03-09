@@ -100,12 +100,12 @@ def update():
     # Spawn obstacles
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model=random.choice(['rock-sl-1', 'rock-sl-2', 'rock']), texture='rock_diffuse.png', scale=(0.1, 0.1, 0.1), position=(lane, 1, 20),
+        obstacles.append(Entity(model=random.choice(['rock-sl-1', 'rock-sl-2', 'rock']), texture=random.choice(['rock_diffuse.png', 'rock_roughness.png', 'rock_specular.png']), scale=(0.1, 0.1, 0.1), position=(lane, 1, 20),
                          rotation=(random.uniform(0, 360), random.uniform(0, 360), random.uniform(0, 360))))
 
     if random.random() < 0.02:
         lane = random.choice(lanes)
-        obstacles.append(Entity(model='cube', color=color.yellow, scale=(1, 2, 1), position=(lane, 4, 20)))
+        obstacles.append(Entity(model='Tree_Spooky2_Low', texture=random.choice(['tree1.jpg', 'tree2.jpg', 'tree3.jpg']), scale=(0.02, 0.02, 0.02), position=(lane, 4, 20)));
 
     # Move obstacles & check collisions
     for obs in obstacles[:]:
